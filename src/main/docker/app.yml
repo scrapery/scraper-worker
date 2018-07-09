@@ -1,0 +1,27 @@
+version: '2'
+services:
+    scraperworker-app:
+        image: scraperworker
+        environment:
+            # - _JAVA_OPTIONS=-Xmx512m -Xms256m
+            - SPRING_PROFILES_ACTIVE=prod,swagger
+            - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://admin:$${simlife.registry.password}@simlife-registry:8761/eureka
+            - SPRING_CLOUD_CONFIG_URI=http://admin:$${simlife.registry.password}@simlife-registry:8761/config
+            - SPRING_DATA_MONGODB_URI=mongodb://scraperworker-mongodb:27017
+            - SPRING_DATA_MONGODB_DATABASE=ScraperWorker
+            - SIMLIFE_SLEEP=30 # gives time for the Simlife Registry to boot before the application
+            - SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=scraperworker-elasticsearch:9300
+    scraperworker-mongodb:
+        extends:
+            file: mongodb.yml
+            service: scraperworker-mongodb
+    scraperworker-elasticsearch:
+        extends:
+            file: elasticsearch.yml
+            service: scraperworker-elasticsearch
+    simlife-registry:
+        extends:
+            file: simlife-registry.yml
+            service: simlife-registry
+        environment:
+            - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:./central-config/docker-config/
